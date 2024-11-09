@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"educationlsp/rpc"
 	"log"
 	"os"
 	"strconv"
@@ -44,8 +45,27 @@ func Split(data []byte, EOF bool) (int, []byte, error) {
 	return totalLength, data[:totalLength], nil
 }
 
+type Request struct {
+	RPC    string `json:"jsonrpc"`
+	ID     int    `json:"id"`
+	Method string `json:"methods"`
+	// Params...
+}
+
+type Response struct {
+	RPC string `json:"jsonrpc"`
+	ID  *int   `json:"id,omitempty"`
+	// Result...
+	// Error...
+}
+
 func handleMessage(logger *log.Logger, msg string) {
-	logger.Println(msg)
+	method, content, err := rpc.DecodeMessage([]byte(msg))
+	if err != nil {
+		logger.Printf("failed to decode, %s", err)
+	}
+	logger.Println("method", method)
+	logger.Println("content", string(content))
 }
 
 func getLogger(file string) *log.Logger {
